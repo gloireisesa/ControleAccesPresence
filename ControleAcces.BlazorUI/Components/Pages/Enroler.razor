@@ -1,0 +1,59 @@
+﻿@page "/enrol-etudiant"
+@using ControleAcces.Application.DTOs
+@using ControleAcces.Application.UseCases
+@inject EnrolerEtudiantUseCase EnrolerEtudiantUseCase
+@inject IJSRuntime JS
+
+<h3>Enrôlement Étudiant</h3>
+
+<div class="form-group">
+    <label>Matricule :</label>
+    <input @bind="matricule" class="form-control" />
+    <button @onclick="RechercherEtudiant" class="btn btn-primary mt-2">Chercher</button>
+</div>
+
+@if (etudiant != null)
+{
+    <div class="card mt-3 p-3">
+        <p><strong>Nom Complet :</strong> @etudiant.NomComplet</p>
+        <p><strong>Email :</strong> @etudiant.Email</p>
+        <p><strong>Promotion :</strong> @etudiant.Promotion</p>
+
+        <button @onclick="ScannerCarte" class="btn btn-success">Scanner Carte RFID</button>
+        <button @onclick="ScannerEmpreinte" class="btn btn-secondary ms-2">Scanner Empreinte Digitale</button>
+    </div>
+}
+
+@code {
+    private string matricule;
+    private EtudiantDTO? etudiant;
+
+    private async Task RechercherEtudiant()
+    {
+        etudiant = await EnrolerEtudiantUseCase.ChercherEtudiantAsync(matricule);
+        if (etudiant == null)
+        {
+            await JS.InvokeVoidAsync("alert", "Étudiant introuvable !");
+        }
+    }
+
+    private async Task ScannerCarte()
+    {
+        if (etudiant == null) return;
+        var success = await EnrolerEtudiantUseCase.ScannerCarteRFIDAsync(etudiant.Id);
+        if (success)
+            await JS.InvokeVoidAsync("alert", "Carte RFID enrôlée avec succès.");
+        else
+            await JS.InvokeVoidAsync("alert", "Échec du scan de la carte RFID.");
+    }
+
+    private async Task ScannerEmpreinte()
+    {
+        if (etudiant == null) return;
+        var success = await EnrolerEtudiantUseCase.ScannerEmpreinteDigitaleAsync(etudiant.Id);
+        if (success)
+            await JS.InvokeVoidAsync("alert", "Empreinte digitale enrôlée avec succès.");
+        else
+            await JS.InvokeVoidAsync("alert", "Échec du scan d'empreinte.");
+    }
+}

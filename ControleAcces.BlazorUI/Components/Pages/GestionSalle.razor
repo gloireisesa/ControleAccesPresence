@@ -1,0 +1,46 @@
+﻿@page "/gestion-salles"
+@using ControleAcces.Application.DTOs
+@using ControleAcces.Application.UseCases
+@inject AffecterModulesAuxSallesUseCase UseCase
+
+<h3>Gestion des Salles</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom Salle</th>
+            <th>Capacité</th>
+            <th>Session</th>
+            <th>Module Assigné</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var salle in salles)
+        {
+            <tr>
+                <td>@salle.NomSalle</td>
+                <td>@salle.Capacite</td>
+                <td>@(salle.Session ?? "N/A")</td>
+                <td>@(GetModuleAffecte(salle.Id) ?? "Aucun")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<SalleDTO> salles = new();
+    private List<ModuleDTO> modules = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        salles = await UseCase.GetAllSallesAsync();
+        modules = await UseCase.GetAllModulesAsync();
+    }
+
+    private string GetModuleAffecte(int salleId)
+    {
+        var salleNom = salles.FirstOrDefault(s => s.Id == salleId)?.NomSalle;
+        var module = modules.FirstOrDefault(m => m.SalleAffectee == salleNom);
+        return module?.Nom;
+    }
+}

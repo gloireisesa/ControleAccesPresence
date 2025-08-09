@@ -1,0 +1,167 @@
+﻿@page "/gestion-modules"
+@using ControleAcces.Application.DTOs
+@using ControleAcces.Application.UseCases
+@inject AffecterModulesAuxSallesUseCase UseCase
+@inject IJSRuntime JS
+
+<h3>Gestion des Modules</h3>
+
+<div class="card p-3 mb-3">
+    <h5>@(isEditing ? "Modifier Module" : "Ajouter un Module")</h5>
+    <input placeholder="Nom du module" @bind="nomModule" class="form-control mb-2" />
+    <input placeholder="Session" @bind="session" class="form-control mb-2" />
+
+    <select @bind="salleId" class="form-select mb-2">
+        <option value="">-- Choisir Salle --</option>
+        @foreach (var salle in salles)
+        {
+            <option value="@salle.Id">@salle.NomSalle</option>
+        }
+    </select>
+
+    <button class="btn btn-primary" @onclick="SauvegarderModule">@((isEditing) ? "Modifier" : "Ajouter")</button>
+    @if (isEditing)
+    {
+        <button class="btn btn-secondary ms-2" @onclick="AnnulerEdition">Annuler</button>
+    }
+</div>
+
+<h5>Liste des Modules</h5>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Session</th>
+            <th>Salle Assignée</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var module in modules)
+        {
+            <tr>
+                <td>@module.Nom</td>
+                <td>@module.Session</td>
+                <td>@(module.SalleAffectee ?? "Aucune")</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" @onclick="() => EditerModule(module)">Modifier</button>
+                    <button class="btn btn-sm btn-danger ms-1" @onclick="() => SupprimerModule(module.Id)">Supprimer</button>
+                    @if (module.SalleAffectee != null)
+                    {
+                        <button class="btn btn-sm btn-secondary ms-1" @onclick="() => DesaffecterSalle(module.Id)">Désaffecter Salle</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<ModuleDTO> modules = new();
+    private List<SalleDTO> salles = new();
+
+    private string nomModule;
+    private string session;
+    private int? salleId;
+
+    private bool isEditing = false;
+    private int editingModuleId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerDonnees();
+    }
+
+    private async Task ChargerDonnees()
+    {
+        modules = await UseCase.GetAllModulesAsync();
+        salles = await UseCase.GetAllSallesAsync();
+    }
+
+    private async Task SauvegarderModule()
+    {
+        if (string.IsNullOrWhiteSpace(nomModule) || string.IsNullOrWhiteSpace(session))
+        {
+            await JS.InvokeVoidAsync("alert", "Le nom et la session sont obligatoires.");
+            return;
+        }
+
+        bool success;
+        if (isEditing)
+        {
+            success = await UseCase.ModifierModuleAsync(editingModuleId, nomModule, session, salleId);
+        }
+        else
+        {
+            success = await UseCase.AjouterModuleAsync(nomModule, session, salleId);
+        }
+
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", isEditing ? "Module modifié." : "Module ajouté.");
+            await ReinitialiserFormulaire();
+            await ChargerDonnees();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur lors de l'opération.");
+        }
+    }
+
+    private async Task SupprimerModule(int moduleId)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Confirmez-vous la suppression ?");
+        if (!confirmed) return;
+
+        var success = await UseCase.SupprimerModuleAsync(moduleId);
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Module supprimé.");
+            await ChargerDonnees();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur lors de la suppression.");
+        }
+    }
+
+    private void EditerModule(ModuleDTO module)
+    {
+        isEditing = true;
+        editingModuleId = module.Id;
+        nomModule = module.Nom;
+        session = module.Session;
+        salleId = salles.FirstOrDefault(s => s.NomSalle == module.SalleAffectee)?.Id;
+    }
+
+    private async Task AnnulerEdition()
+    {
+        await ReinitialiserFormulaire();
+    }
+
+    private async Task ReinitialiserFormulaire()
+    {
+        nomModule = "";
+        session = "";
+        salleId = null;
+        isEditing = false;
+        editingModuleId = 0;
+    }
+
+    private async Task DesaffecterSalle(int moduleId)
+    {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm", "Confirmez-vous la désaffectation de la salle ?");
+        if (!confirmed) return;
+
+        var success = await UseCase.DesaffecterSalleDuModuleAsync(moduleId);
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Salle désaffectée du module.");
+            await ChargerDonnees();
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Erreur lors de la désaffectation.");
+        }
+    }
+}

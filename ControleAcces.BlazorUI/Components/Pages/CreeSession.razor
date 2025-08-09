@@ -1,0 +1,83 @@
+﻿@page "/sessions"
+@using ControleAcces.Application.Services
+@using ControleAcces.Application.UseCases
+@using ControleAcces.Domain.Entities
+@inject CreerSessionUseCase CreerSessionUseCase
+@inject SessionService SessionService
+@inject IJSRuntime JS
+
+<h3>Gestion des Sessions</h3>
+
+<div class="card p-3 mb-3">
+    <h5>Créer une Nouvelle Session</h5>
+    <div class="form-group">
+        <label>Nom Session :</label>
+        <input @bind="nomSession" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Année Académique :</label>
+        <input @bind="anneeAcademique" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Date Début :</label>
+        <input type="date" @bind="dateDebut" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label>Date Fin :</label>
+        <input type="date" @bind="dateFin" class="form-control" />
+    </div>
+    <button @onclick="CreerSession" class="btn btn-primary mt-2">Créer</button>
+</div>
+
+<h5>Liste des Sessions Existantes</h5>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Année Académique</th>
+            <th>Date Début</th>
+            <th>Date Fin</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var session in sessions)
+        {
+            <tr>
+                <td>@session.Nom</td>
+                <td>@session.AnneeAcademique</td>
+                <td>@session.DateDebut.ToShortDateString()</td>
+                <td>@session.DateFin.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private string nomSession;
+    private string anneeAcademique;
+    private DateTime dateDebut = DateTime.Today;
+    private DateTime dateFin = DateTime.Today;
+    private List<Session> sessions = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        sessions = await SessionService.GetAllSessionsAsync();
+    }
+
+    private async Task CreerSession()
+    {
+        var success = await CreerSessionUseCase.CreerSessionAsync(nomSession, dateDebut, dateFin, anneeAcademique);
+        if (success)
+        {
+            await JS.InvokeVoidAsync("alert", "Session créée avec succès.");
+            sessions = await SessionService.GetAllSessionsAsync();
+            nomSession = string.Empty;
+            anneeAcademique = string.Empty;
+            dateDebut = dateFin = DateTime.Today;
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("alert", "Échec de la création de la session.");
+        }
+    }
+}
