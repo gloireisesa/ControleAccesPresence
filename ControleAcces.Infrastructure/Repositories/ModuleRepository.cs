@@ -36,19 +36,19 @@ namespace ControleAcces.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        //async Task<List<Module>> IModuleRepository.GetAllAsync()
-        //{
-           // return await _context.Modules.ToListAsync();
-        //}
+        async Task<List<Module>> IModuleRepository.GetAllAsync()
+        {
+            return await _context.Modules.ToListAsync();
+        }
 
         public Task DeleteAsync(Module module)
         {
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<Module>> GetAllAsync()
-        {
-            throw new NotImplementedException();
-        }
+        //public Task<IEnumerable<Module>> GetAllAsync()
+        //{
+        //    return await _context.Modules.ToListAsync();
+        //}
     }
 }

@@ -2,34 +2,77 @@
 @using ControleAcces.Application.DTOs
 @using ControleAcces.Application.UseCases
 @inject AffecterModulesAuxSallesUseCase UseCase
+@rendermode InteractiveServer
 
-<h3>Gestion des Salles</h3>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-gradient bg-primary text-white text-center py-3">
+            <h3 class="mb-0 fw-bold">
+                <i class="bi bi-building"></i> Gestion des Salles
+            </h3>
+        </div>
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Nom Salle</th>
-            <th>Capacité</th>
-            <th>Session</th>
-            <th>Module Assigné</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var salle in salles)
-        {
-            <tr>
-                <td>@salle.NomSalle</td>
-                <td>@salle.Capacite</td>
-                <td>@(salle.Session ?? "N/A")</td>
-                <td>@(GetModuleAffecte(salle.Id) ?? "Aucun")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+        <div class="card-body p-4">
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered align-middle shadow-sm">
+                    <thead class="table-primary text-center">
+                        <tr>
+                            <th>Nom Salle</th>
+                            <th>Capacité</th>
+                            <th>Session</th>
+                            <th>Module Assigné</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var salle in PaginatedSalles)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@salle.NomSalle</td>
+                                <td class="text-center">@salle.Capacite</td>
+                                <td class="text-center">@((string.IsNullOrWhiteSpace(salle.Session)) ? "N/A" : salle.Session)</td>
+                                <td class="text-center">
+                                    <span class="badge bg-info text-dark px-3 py-2">
+                                        @((GetModuleAffecte(salle.Id) ?? "Aucun"))
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav class="d-flex justify-content-center mt-3">
+                <ul class="pagination">
+                    <li class="page-item @(CurrentPage == 1 ? "disabled" : "")">
+                        <button class="page-link" @onclick="PreviousPage">Précédent</button>
+                    </li>
+                    @for (int i = 1; i <= TotalPages; i++)
+                    {
+                        <li class="page-item @(i == CurrentPage ? "active" : "")">
+                            <button class="page-link" @onclick="() => GoToPage(i)">@i</button>
+                        </li>
+                    }
+                    <li class="page-item @(CurrentPage == TotalPages ? "disabled" : "")">
+                        <button class="page-link" @onclick="NextPage">Suivant</button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
 
 @code {
     private List<SalleDTO> salles = new();
     private List<ModuleDTO> modules = new();
+
+    private int CurrentPage = 1;
+    private int PageSize = 5;
+
+    private IEnumerable<SalleDTO> PaginatedSalles =>
+        salles.Skip((CurrentPage - 1) * PageSize).Take(PageSize);
+
+    private int TotalPages => (int)Math.Ceiling(salles.Count / (double)PageSize);
 
     protected override async Task OnInitializedAsync()
     {
@@ -42,5 +85,20 @@
         var salleNom = salles.FirstOrDefault(s => s.Id == salleId)?.NomSalle;
         var module = modules.FirstOrDefault(m => m.SalleAffectee == salleNom);
         return module?.Nom;
+    }
+
+    private void NextPage()
+    {
+        if (CurrentPage < TotalPages) CurrentPage++;
+    }
+
+    private void PreviousPage()
+    {
+        if (CurrentPage > 1) CurrentPage--;
+    }
+
+    private void GoToPage(int pageNumber)
+    {
+        CurrentPage = pageNumber;
     }
 }

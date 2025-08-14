@@ -3,66 +3,98 @@
 @using ControleAcces.Application.UseCases
 @using ControleAcces.Domain.Entities
 @inject GenererRapportPresenceUseCase RapportUseCase
+@rendermode InteractiveServer
 
-<h3>Rapport de Présence</h3>
+<div class="container mt-4">
+    <div class="card shadow-lg border-0 rounded-3">
+        <div class="card-header bg-primary text-white text-center">
+            <h3 class="mb-0"> Rapport de Présence</h3>
+        </div>
 
-<div class="card p-3 mb-3">
-    <div class="form-group">
-        <label>Filtrer par Session :</label>
-        <select @bind="sessionId" class="form-control">
-            <option value="">-- Toutes les Sessions --</option>
-            @foreach (var session in sessions)
-            {
-                <option value="@session.Id">@session.Nom</option>
-            }
-        </select>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold"> Session</label>
+                    <select @bind="sessionId" class="form-select">
+                        <option value="">-- Toutes les Sessions --</option>
+                        @foreach (var session in sessions)
+                        {
+                            <option value="@session.Id">@session.Nom</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold"> Date</label>
+                    <input type="date" @bind="dateFiltre" class="form-control" />
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold"> Salle</label>
+                    <select @bind="salleId" class="form-select">
+                        <option value="">-- Toutes les Salles --</option>
+                        @foreach (var salle in salles)
+                        {
+                            <option value="@salle.Id">@salle.NomSalle</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">🆔 Matricule</label>
+                    <input @bind="matriculeEtudiant" class="form-control" placeholder="Entrer le matricule" />
+                </div>
+            </div>
+
+            <div class="mt-3 text-end">
+                <button @onclick="ChargerRapport" class="btn btn-success">
+                    📄 Générer Rapport
+                </button>
+            </div>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Date :</label>
-        <input type="date" @bind="dateFiltre" class="form-control" />
+
+    <div class="card shadow-sm border-0 rounded-3 mt-4">
+        <div class="card-body p-0">
+            <table class="table table-hover table-bordered align-middle mb-0">
+                <thead class="table-primary text-center">
+                    <tr>
+                        <th> Date</th>
+                        <th> Heure Entrée</th>
+                        <th> Heure Sortie</th>
+                        <th> Étudiant</th>
+                        <th> Salle</th>
+                        <th> Session</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (rapport.Any())
+                    {
+                        @foreach (var presence in rapport)
+                        {
+                            <tr>
+                                <td>@presence.Date.ToShortDateString()</td>
+                                <td class="text-center">@presence.HeureEntree</td>
+                                <td class="text-center">@presence.HeureSortie</td>
+                                <td>@presence.EtudiantNom</td>
+                                <td>@presence.SalleNom</td>
+                                <td>@presence.SessionNom</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">
+                                Aucun résultat trouvé pour les filtres sélectionnés.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="form-group">
-        <label>Filtrer par Salle :</label>
-        <select @bind="salleId" class="form-control">
-            <option value="">-- Toutes les Salles --</option>
-            @foreach (var salle in salles)
-            {
-                <option value="@salle.Id">@salle.NomSalle</option>
-            }
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Matricule Étudiant :</label>
-        <input @bind="matriculeEtudiant" class="form-control" />
-    </div>
-    <button @onclick="ChargerRapport" class="btn btn-primary mt-2">Générer Rapport</button>
 </div>
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Date</th>
-            <th>Heure Entrée</th>
-            <th>Heure Sortie</th>
-            <th>Étudiant</th>
-            <th>Salle</th>
-            <th>Session</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var presence in rapport)
-        {
-            <tr>
-                <td>@presence.Date.ToShortDateString()</td>
-                <td>@presence.HeureEntree</td>
-                <td>@presence.HeureSortie</td>
-                <td>@presence.EtudiantNom</td>
-                <td>@presence.SalleNom</td>
-                <td>@presence.SessionNom</td>
-            </tr>
-        }
-    </tbody>
-</table>
 
 @code {
     private string sessionId;

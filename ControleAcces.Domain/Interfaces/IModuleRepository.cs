@@ -10,10 +10,10 @@ namespace ControleAcces.Domain.Interfaces
     public interface IModuleRepository
     {
         Task<Module> GetByIdAsync(int id);
-        Task<IEnumerable<Module>> GetAllAsync();
+        //Task<IEnumerable<Module>> GetAllAsync();
         Task AddAsync(Module module);
         Task UpdateAsync(Module module);
-        //Task<List<Domain.Entities.Module>> GetAllAsync();
+        Task<List<Domain.Entities.Module>> GetAllAsync();
         //Task<Domain.Entities.Module> GetByIdAsync(Guid id);
         //Task AddAsync(Domain.Entities.Module module);
         //Task UpdateAsync(Domain.Entities.Module module);
