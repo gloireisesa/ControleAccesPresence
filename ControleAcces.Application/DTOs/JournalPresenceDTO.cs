@@ -21,7 +21,7 @@ namespace ControleAcces.Application.DTOs
         public int SalleId { get; internal set; }
         public int SessionId { get; internal set; }
 
-        public string SessionNom { get; internal set; }
+        public string? SessionNom { get; internal set; }
         public DateTime Date { get; internal set; }
     }
 }

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ControleAcces.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250809130715_InitialCreateaa")]
-    partial class InitialCreateaa
+    [Migration("20250814232845_Table")]
+    partial class Table
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,7 +108,10 @@ namespace ControleAcces.Infrastructure.Migrations
             modelBuilder.Entity("ControleAcces.Domain.Entities.HoraireExamen", b =>
                 {
                     b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
@@ -136,6 +139,8 @@ namespace ControleAcces.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("IdPromotion");
 
                     b.HasIndex("ModuleId");
 
@@ -226,6 +231,9 @@ namespace ControleAcces.Infrastructure.Migrations
                     b.Property<int>("SalleId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("SalleId1")
+                        .HasColumnType("int");
+
                     b.Property<string>("Session")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -246,6 +254,10 @@ namespace ControleAcces.Infrastructure.Migrations
                     b.HasIndex("HoraireExamenId");
 
                     b.HasIndex("SalleId");
+
+                    b.HasIndex("SalleId1");
+
+                    b.HasIndex("SessionId");
 
                     b.ToTable("JournalPresences");
                 });
@@ -380,11 +392,61 @@ namespace ControleAcces.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("TotalEtudiants")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("HoraireExamenId");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("ControleAcces.Domain.Entities.Utilisateur", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MotDePasse")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nom")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Utilisateurs");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "admin@gloire.com",
+                            MotDePasse = "123499",
+                            Nom = "Admin",
+                            Role = "Admin"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "surveillant@fatu.com",
+                            MotDePasse = "567899",
+                            Nom = "Surveillant",
+                            Role = "Surveillant"
+                        });
                 });
 
             modelBuilder.Entity("ControleAcces.Domain.Entities.AccesExamen", b =>
@@ -437,7 +499,7 @@ namespace ControleAcces.Infrastructure.Migrations
                 {
                     b.HasOne("ControleAcces.Domain.Entities.Promotion", "Promotion")
                         .WithMany("HoraireExamens")
-                        .HasForeignKey("Id")
+                        .HasForeignKey("IdPromotion")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
@@ -498,8 +560,19 @@ namespace ControleAcces.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("ControleAcces.Domain.Entities.Salle", "Salle")
-                        .WithMany("Presences")
+                        .WithMany()
                         .HasForeignKey("SalleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("ControleAcces.Domain.Entities.Salle", null)
+                        .WithMany("Presences")
+                        .HasForeignKey("SalleId1")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("ControleAcces.Domain.Entities.Session", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 

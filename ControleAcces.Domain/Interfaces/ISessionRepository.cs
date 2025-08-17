@@ -15,10 +15,12 @@ namespace ControleAcces.Domain.Interfaces
         Task<List<Session>> GetAllAsync();
         Task UpdateAsync(Session session);
         Task DeleteAsync(int id);
+        Task<Session?> GetByIdAsync(int? sessionId);
+        //Task<string> GetByIdAsync(int? sessionId);
 
         //Task<List<Session>> GetAllAsync();
-            //Task<Session> GetByIdAsync(Guid id);
-            //Task AddAsync(Session session);
-    
-        }
+        //Task<Session> GetByIdAsync(Guid id);
+        //Task AddAsync(Session session);
+
+    }
     }

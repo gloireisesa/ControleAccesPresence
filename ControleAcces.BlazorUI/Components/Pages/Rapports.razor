@@ -2,19 +2,22 @@
 @using ControleAcces.Application.DTOs
 @using ControleAcces.Application.UseCases
 @using ControleAcces.Domain.Entities
+@using ControleAcces.Infrastructure.ServicesExternes
 @inject GenererRapportPresenceUseCase RapportUseCase
+@inject RapportPdfService PdfService
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 
 <div class="container mt-4">
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white text-center">
-            <h3 class="mb-0"> Rapport de Présence</h3>
+            <h3 class="mb-0">Rapport de Présence</h3>
         </div>
 
         <div class="card-body">
             <div class="row g-3">
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"> Session</label>
+                    <label class="form-label fw-bold">Session</label>
                     <select @bind="sessionId" class="form-select">
                         <option value="">-- Toutes les Sessions --</option>
                         @foreach (var session in sessions)
@@ -25,12 +28,12 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"> Date</label>
-                    <input type="date" @bind="dateFiltre" class="form-control" />
+                    <label class="form-label fw-bold">Date</label>
+                    <InputDate @bind-Value="dateFiltre" class="form-control" />
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label fw-bold"> Salle</label>
+                    <label class="form-label fw-bold">Salle</label>
                     <select @bind="salleId" class="form-select">
                         <option value="">-- Toutes les Salles --</option>
                         @foreach (var salle in salles)
@@ -41,30 +44,74 @@
                 </div>
 
                 <div class="col-md-3">
+                    <label class="form-label fw-bold">Promotion</label>
+                    <select @bind="promotionId" class="form-select">
+                        <option value="">-- Toutes les Promotions --</option>
+                        @foreach (var promo in promotions)
+                        {
+                            <option value="@promo.Id">@promo.Nom</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-3 mt-3">
                     <label class="form-label fw-bold">🆔 Matricule</label>
                     <input @bind="matriculeEtudiant" class="form-control" placeholder="Entrer le matricule" />
                 </div>
             </div>
 
             <div class="mt-3 text-end">
-                <button @onclick="ChargerRapport" class="btn btn-success">
+                <button @onclick="ChargerRapport" class="btn btn-success me-2">
                     📄 Générer Rapport
                 </button>
+
+                @if (rapport.Any())
+                {
+                    <button @onclick="ExporterPdf" class="btn btn-danger">
+                        📑 Exporter en PDF
+                    </button>
+                }
             </div>
         </div>
     </div>
+
+    @if (stats != null)
+    {
+        <div class="card shadow-sm border-0 rounded-3 mt-4">
+            <div class="card-body">
+                <h5 class="mb-3">Statistiques</h5>
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded">
+                            <strong>Total Étudiants:</strong> @stats.TotalEtudiants
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-success">
+                            <strong>Présents:</strong> @stats.NombrePresent
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-3 border rounded text-danger">
+                            <strong>Absents:</strong> @stats.NombreAbsent
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
 
     <div class="card shadow-sm border-0 rounded-3 mt-4">
         <div class="card-body p-0">
             <table class="table table-hover table-bordered align-middle mb-0">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th> Date</th>
-                        <th> Heure Entrée</th>
-                        <th> Heure Sortie</th>
-                        <th> Étudiant</th>
-                        <th> Salle</th>
-                        <th> Session</th>
+                        <th>Date</th>
+                        <th>Heure Entrée</th>
+                        <th>Heure Sortie</th>
+                        <th>Étudiant</th>
+                        <th>Salle</th>
+                        <th>Session</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -74,9 +121,9 @@
                         {
                             <tr>
                                 <td>@presence.Date.ToShortDateString()</td>
-                                <td class="text-center">@presence.HeureEntree</td>
-                                <td class="text-center">@presence.HeureSortie</td>
-                                <td>@presence.EtudiantNom</td>
+                                <td class="text-center">@(presence.HeureEntree?.ToString("HH:mm") ?? "N/A")</td>
+                                <td class="text-center">@(presence.HeureSortie?.ToString("HH:mm") ?? "N/A")</td>
+                                <td>@presence.NomComplet</td>
                                 <td>@presence.SalleNom</td>
                                 <td>@presence.SessionNom</td>
                             </tr>
@@ -97,22 +144,58 @@
 </div>
 
 @code {
-    private string sessionId;
-    private string salleId;
-    private string matriculeEtudiant;
-    private DateTime dateFiltre = DateTime.Today;
+    private int? sessionId;
+    private int? salleId;
+    private int? promotionId;
+    private string? matriculeEtudiant;
+    private DateTime? dateFiltre = DateTime.Today;
+
     private List<Session> sessions = new();
     private List<SalleDTO> salles = new();
+    private List<PromotionDTO> promotions = new();
     private List<JournalPresenceDTO> rapport = new();
+    private StatistiquesDTO? stats;
 
     protected override async Task OnInitializedAsync()
     {
         sessions = await RapportUseCase.GetAllSessionsAsync();
         salles = await RapportUseCase.GetAllSallesAsync();
+        promotions = await RapportUseCase.GetAllPromotionsAsync();
     }
 
     private async Task ChargerRapport()
     {
-        rapport = await RapportUseCase.GenererRapportAsync(sessionId, salleId, matriculeEtudiant, dateFiltre);
+        // Génération du rapport avec tous les filtres
+        rapport = await RapportUseCase.GenererRapportAsync(
+            sessionId,
+            salleId,
+            matriculeEtudiant,
+            promotionId,
+            dateFiltre
+        );
+
+        // Génération des statistiques seulement avec les filtres que la méthode accepte
+        stats = await RapportUseCase.GenererStatistiquesAsync(
+            sessionId,
+            salleId,
+            promotionId,
+            dateFiltre
+        );
+    }
+
+    private async Task ExporterPdf()
+    {
+        if (rapport == null || !rapport.Any()) return;
+
+        var pdfBytes = PdfService.GenererPdf(rapport, stats);
+        var base64 = Convert.ToBase64String(pdfBytes);
+        var fileName = "RapportPresence.pdf";
+
+        await JS.InvokeVoidAsync(
+            "downloadFileFromBase64",
+            fileName,
+            "application/pdf",
+            base64
+        );
     }
 }

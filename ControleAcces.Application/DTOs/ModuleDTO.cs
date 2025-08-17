@@ -18,5 +18,6 @@ namespace ControleAcces.Application.DTOs
 
         public int SalleId { get; set; }
        public string SalleNom{ get; set;} = string.Empty;
+        //public string NomSession { get; internal set; }
     }
 }

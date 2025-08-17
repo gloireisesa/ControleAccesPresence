@@ -28,6 +28,7 @@ namespace ControleAcces.Infrastructure.Data
         public DbSet<Paiement> Paiements { get; set; }
         public DbSet<JournalPresence> JournalPresences { get; set; }
         public DbSet<Session> Sessions { get; set; }
+        public DbSet<Utilisateur> Utilisateurs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
 
@@ -69,7 +70,7 @@ namespace ControleAcces.Infrastructure.Data
             modelBuilder.Entity<Promotion>()
                 .HasMany(p => p.HoraireExamens)
                 .WithOne(h => h.Promotion)
-                .HasForeignKey(h => h.Id);
+                .HasForeignKey(h => h.IdPromotion);
 
             // Module - HoraireExamen (1-many)
             modelBuilder.Entity<Module>()
@@ -101,6 +102,43 @@ namespace ControleAcces.Infrastructure.Data
                 .WithOne(j => j.HoraireExamen)
                 .HasForeignKey(j => j.HoraireExamenId);
 
+            // Salle - AccesExamen (1-many)
+            modelBuilder.Entity<Salle>()
+                .HasMany(s => s.AccesExamens)
+                .WithOne(a => a.Salle)
+                .HasForeignKey(a => a.SalleId);
+
+            // Module - AccesExamen (1-many)
+            modelBuilder.Entity<Module>()
+                .HasMany(m => m.AccesExamens)
+                .WithOne(a => a.Module)
+                .HasForeignKey(a => a.ModuleId);
+
+            // JournalPresence - Salle (many-1)
+            modelBuilder.Entity<JournalPresence>()
+                .HasOne(j => j.Salle)
+                .WithMany()
+                .HasForeignKey(j => j.SalleId);
+
+            // JournalPresence - Session (many-1)
+            modelBuilder.Entity<JournalPresence>()
+                .HasOne<Session>()
+                .WithMany()
+                .HasForeignKey(j => j.SessionId);
+
+            // JournalPresence - AccesExamen (many-1)
+            modelBuilder.Entity<JournalPresence>()
+                .HasOne(j => j.AccesExamen)
+                .WithMany()
+                .HasForeignKey(j => j.AccesExamenId);
+
+            // Seed utilisateurs avec int Id
+            modelBuilder.Entity<Utilisateur>().HasData(
+                new Utilisateur { Id = 1, Nom = "Admin", Email = "admin@gloire.com", MotDePasse = "123499", Role = "Admin" },
+                new Utilisateur { Id = 2, Nom = "Surveillant", Email = "surveillant@fatu.com", MotDePasse = "567899", Role = "Surveillant" }
+            );
+
+            // Comportement de suppression
             foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             {
                 relationship.DeleteBehavior = DeleteBehavior.NoAction;
@@ -112,4 +150,6 @@ namespace ControleAcces.Infrastructure.Data
         }
 
     }
+
+    // Add-Migration NomDeLaMigration
 

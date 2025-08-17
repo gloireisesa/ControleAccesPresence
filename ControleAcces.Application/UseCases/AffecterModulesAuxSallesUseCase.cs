@@ -21,18 +21,24 @@ namespace ControleAcces.Application.UseCases
             _salleRepository = salleRepository;
         }
 
+        // Récupère tous les modules avec le nom de la salle affectée
         public async Task<List<ModuleDTO>> GetAllModulesAsync()
         {
             var modules = await _moduleRepository.GetAllAsync();
+            var salles = await _salleRepository.GetAllAsync();
+
             return modules.Select(m => new ModuleDTO
             {
                 Id = m.Id,
                 Nom = m.Nom,
                 Session = m.Session,
-                SalleAffectee = m.SalleNom
+                SalleAffectee = m.SalleId.HasValue
+                    ? salles.FirstOrDefault(s => s.Id == m.SalleId.Value)?.NomSalle
+                    : null
             }).ToList();
         }
 
+        // Récupère toutes les salles
         public async Task<List<SalleDTO>> GetAllSallesAsync()
         {
             var salles = await _salleRepository.GetAllAsync();
@@ -45,11 +51,11 @@ namespace ControleAcces.Application.UseCases
             }).ToList();
         }
 
+        // Ajouter un module
         public async Task<bool> AjouterModuleAsync(string nom, string session, int? salleId)
         {
             var module = new Domain.Entities.Module
             {
-                //Id = int.NewGuid(),
                 Nom = nom,
                 Session = session,
                 SalleId = salleId
@@ -58,6 +64,7 @@ namespace ControleAcces.Application.UseCases
             return true;
         }
 
+        // Modifier un module
         public async Task<bool> ModifierModuleAsync(int moduleId, string nom, string session, int? salleId)
         {
             var module = await _moduleRepository.GetByIdAsync(moduleId);
@@ -71,6 +78,7 @@ namespace ControleAcces.Application.UseCases
             return true;
         }
 
+        // Supprimer un module
         public async Task<bool> SupprimerModuleAsync(int moduleId)
         {
             var module = await _moduleRepository.GetByIdAsync(moduleId);
@@ -80,6 +88,7 @@ namespace ControleAcces.Application.UseCases
             return true;
         }
 
+        // Désaffecter la salle d'un module
         public async Task<bool> DesaffecterSalleDuModuleAsync(int moduleId)
         {
             var module = await _moduleRepository.GetByIdAsync(moduleId);

@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace ControleAcces.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreateaa : Migration
+    public partial class InitialCreateea : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -55,6 +57,22 @@ namespace ControleAcces.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Salles", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Utilisateurs",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Nom = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MotDePasse = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Utilisateurs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -165,7 +183,8 @@ namespace ControleAcces.Infrastructure.Migrations
                 name: "HoraireExamens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     HeureDebut = table.Column<TimeSpan>(type: "time", nullable: false),
                     HeureFin = table.Column<TimeSpan>(type: "time", nullable: false),
@@ -184,54 +203,12 @@ namespace ControleAcces.Infrastructure.Migrations
                         principalTable: "Modules",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_HoraireExamens_Promotions_Id",
-                        column: x => x.Id,
+                        name: "FK_HoraireExamens_Promotions_IdPromotion",
+                        column: x => x.IdPromotion,
                         principalTable: "Promotions",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_HoraireExamens_Salles_SalleId",
-                        column: x => x.SalleId,
-                        principalTable: "Salles",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "JournalPresences",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    EtudiantId = table.Column<int>(type: "int", nullable: false),
-                    AccesExamenId = table.Column<int>(type: "int", nullable: false),
-                    HeureEntree = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HeureSortie = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Statut = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SalleId = table.Column<int>(type: "int", nullable: false),
-                    Session = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    SessionId = table.Column<int>(type: "int", nullable: false),
-                    HoraireExamenId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_JournalPresences", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_JournalPresences_AccesExamens_AccesExamenId",
-                        column: x => x.AccesExamenId,
-                        principalTable: "AccesExamens",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_JournalPresences_Etudiants_EtudiantId",
-                        column: x => x.EtudiantId,
-                        principalTable: "Etudiants",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_JournalPresences_HoraireExamens_HoraireExamenId",
-                        column: x => x.HoraireExamenId,
-                        principalTable: "HoraireExamens",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_JournalPresences_Salles_SalleId",
                         column: x => x.SalleId,
                         principalTable: "Salles",
                         principalColumn: "Id");
@@ -259,6 +236,68 @@ namespace ControleAcces.Infrastructure.Migrations
                         principalColumn: "Id");
                 });
 
+            migrationBuilder.CreateTable(
+                name: "JournalPresences",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    EtudiantId = table.Column<int>(type: "int", nullable: false),
+                    AccesExamenId = table.Column<int>(type: "int", nullable: false),
+                    HeureEntree = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    HeureSortie = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Statut = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SalleId = table.Column<int>(type: "int", nullable: false),
+                    Session = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SessionId = table.Column<int>(type: "int", nullable: false),
+                    HoraireExamenId = table.Column<int>(type: "int", nullable: false),
+                    SalleId1 = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_JournalPresences", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_AccesExamens_AccesExamenId",
+                        column: x => x.AccesExamenId,
+                        principalTable: "AccesExamens",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_Etudiants_EtudiantId",
+                        column: x => x.EtudiantId,
+                        principalTable: "Etudiants",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_HoraireExamens_HoraireExamenId",
+                        column: x => x.HoraireExamenId,
+                        principalTable: "HoraireExamens",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_Salles_SalleId",
+                        column: x => x.SalleId,
+                        principalTable: "Salles",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_Salles_SalleId1",
+                        column: x => x.SalleId1,
+                        principalTable: "Salles",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_JournalPresences_Sessions_SessionId",
+                        column: x => x.SessionId,
+                        principalTable: "Sessions",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.InsertData(
+                table: "Utilisateurs",
+                columns: new[] { "Id", "Email", "MotDePasse", "Nom", "Role" },
+                values: new object[,]
+                {
+                    { 1, "admin@gloire.com", "123499", "Admin", "Admin" },
+                    { 2, "surveillant@fatu.com", "567899", "Surveillant", "Surveillant" }
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AccesExamens_EtudiantId",
                 table: "AccesExamens",
@@ -282,6 +321,11 @@ namespace ControleAcces.Infrastructure.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Etudiants_IdPromotion",
                 table: "Etudiants",
+                column: "IdPromotion");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_HoraireExamens_IdPromotion",
+                table: "HoraireExamens",
                 column: "IdPromotion");
 
             migrationBuilder.CreateIndex(
@@ -336,6 +380,16 @@ namespace ControleAcces.Infrastructure.Migrations
                 column: "SalleId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_JournalPresences_SalleId1",
+                table: "JournalPresences",
+                column: "SalleId1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_JournalPresences_SessionId",
+                table: "JournalPresences",
+                column: "SessionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Paiements_EtudiantId",
                 table: "Paiements",
                 column: "EtudiantId");
@@ -375,6 +429,9 @@ namespace ControleAcces.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Paiements");
+
+            migrationBuilder.DropTable(
+                name: "Utilisateurs");
 
             migrationBuilder.DropTable(
                 name: "AccesExamens");

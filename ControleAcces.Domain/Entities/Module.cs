@@ -18,6 +18,5 @@ namespace ControleAcces.Domain.Entities
 
         public ICollection<AccesExamen> AccesExamens { get; set; } = new List<AccesExamen>();
         public ICollection<HoraireExamen> HoraireExamens { get; set; } = new List<HoraireExamen>();
-        
     }
 }

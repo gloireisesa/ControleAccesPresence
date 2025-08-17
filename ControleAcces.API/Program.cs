@@ -1,5 +1,9 @@
 using ControleAcces.API.DependencyInjection;
 
+using Microsoft.EntityFrameworkCore;
+using ControleAcces.Infrastructure.Data;
+
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -9,6 +13,9 @@ builder.Services.AddSwaggerGen();
 
 // Custom Dependency Injection (Repos, Services, UseCases)
 builder.Services.AddControleAccesDependencies(builder.Configuration);
+
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

@@ -1,0 +1,57 @@
+﻿@page "/"
+@using ControleAcces.Shared.DTOs
+@using ControleAcces.Infrastructure.Data
+@using Microsoft.EntityFrameworkCore
+@inject NavigationManager Navigation
+@inject ApplicationDbContext Db
+@rendermode InteractiveServer
+<h3>Connexion</h3>
+
+@if (!string.IsNullOrEmpty(MessageErreur))
+{
+    <div class="alert alert-danger">@MessageErreur</div>
+}
+
+<div class="card p-4 shadow" style="max-width:400px; margin:auto; margin-top:100px;">
+    <input @bind="Email" placeholder="Email" class="form-control mb-3" />
+    <input @bind="MotDePasse" type="password" placeholder="Mot de passe" class="form-control mb-3" />
+    <button class="btn btn-primary w-100" @onclick="SeConnecter">Se connecter</button>
+</div>
+
+@code {
+    private string Email { get; set; } = "";
+    private string MotDePasse { get; set; } = "";
+    private string MessageErreur { get; set; } = "";
+
+    private async Task SeConnecter()
+    {
+        var utilisateur = await Db.Utilisateurs
+            .FirstOrDefaultAsync(u => u.Email.Trim().ToLower() == Email.Trim().ToLower()
+                                   && u.MotDePasse.Trim() == MotDePasse.Trim());
+
+        if (utilisateur != null)
+        {
+            // Stockage de l'utilisateur dans la session
+            SessionUtilisateur.Current = new UtilisateurSessionDTO
+            {
+                Id = utilisateur.Id,
+                Nom = utilisateur.Nom,
+                Role = utilisateur.Role,
+                Email = utilisateur.Email
+            };
+
+            // Redirection selon rôle
+            if (utilisateur.Role == "Admin")
+                Navigation.NavigateTo("/sessions", forceLoad: true);
+              
+            else if (utilisateur.Role == "Surveillant")
+                Navigation.NavigateTo("/rapport-presence", forceLoad: true);
+            else
+                Navigation.NavigateTo("/", forceLoad: true);
+        }
+        else
+        {
+            MessageErreur = "Email ou mot de passe incorrect";
+        }
+    }
+}

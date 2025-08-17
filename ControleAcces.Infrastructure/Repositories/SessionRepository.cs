@@ -25,10 +25,10 @@ namespace ControleAcces.Infrastructure.Repositories
             return await _context.Sessions.ToListAsync();
         }
 
-        public async Task<Session> GetByIdAsync(int id)
-        {
-            return await _context.Sessions.FindAsync(id);
-        }
+        //public async Task<Session> GetByIdAsync(int id)
+        //{
+        //    return await _context.Sessions.FindAsync(id);
+        //}
 
         public async Task AddAsync(Session session)
         {
@@ -50,6 +50,19 @@ namespace ControleAcces.Infrastructure.Repositories
                 _context.Sessions.Remove(session);
                 await _context.SaveChangesAsync();
             }
+        }
+        public async Task<Session> GetByIdAsync(int sessionId)
+        {
+            return await _context.Sessions.FindAsync(sessionId);
+        }
+
+        public async Task<Session?> GetByIdAsync(int? sessionId)
+        {
+            if (sessionId == null)
+                return null;
+
+            return await _context.Sessions
+                                 .FirstOrDefaultAsync(s => s.Id == sessionId.Value);
         }
     }
 }
