@@ -1,5 +1,6 @@
 ﻿using ControleAcces.Domain.Entities;
 using ControleAcces.Domain.Interfaces;
+using ControleAcces.Domain.ValueObjects;
 using ControleAcces.Shared.DTOs;
 using ControleAcces.Shared.Enums;
 using System;
@@ -29,7 +30,7 @@ namespace ControleAcces.Application.UseCases
             _hardwareService = hardwareService;
         }
 
-        public async Task<bool> ControlerAccesAsync(string salleId)
+        public async Task<bool> ControlerAccesAsync(int salleId)
         {
             var carteCode = await _hardwareService.ScannerCarteRFIDAsync();
             var empreinteCode = await _hardwareService.ScannerEmpreinteDigitaleAsync();
@@ -43,10 +44,10 @@ namespace ControleAcces.Application.UseCases
 
         public async Task<AccesResponseDTO> VerifierAccesAsync(AccesRequestDTO request)
         {
-            return await VerifierEtExecuterAccesAsync(request.CarteCode, request.EmpreinteCode, request.SalleId.ToString());
+            return await VerifierEtExecuterAccesAsync(request.CarteCode, request.EmpreinteCode, request.SalleId);
         }
 
-        private async Task<AccesResponseDTO> VerifierEtExecuterAccesAsync(string carteCode, string empreinteCode, string salleId)
+        private async Task<AccesResponseDTO> VerifierEtExecuterAccesAsync(string carteCode, string empreinteCode, int salleId)
         {
             var identifiant = await _identifiantRepository.GetByCodesAsync(carteCode, empreinteCode);
             if (identifiant == null)
@@ -62,7 +63,8 @@ namespace ControleAcces.Application.UseCases
             }
 
             var etudiantId = identifiant.EtudiantId;
-            var accesValide = await _accesExamenRepository.HasAccessAsync(etudiantId, salleId, DateTime.Now);
+            var horaireId = (int)DateTime.Now.TimeOfDay.TotalHours;
+            var accesValide = await _accesExamenRepository.HasAccessAsync(etudiantId, salleId, horaireId);
             if (!accesValide)
             {
                 await _hardwareService.AfficherMessageOLEDAsync(ResultatAccesEnum.PasExamenAujourdhui);

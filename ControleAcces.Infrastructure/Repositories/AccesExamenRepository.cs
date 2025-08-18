@@ -19,12 +19,14 @@ namespace ControleAcces.Infrastructure.Repositories
             _context = context;
         }
 
+        // Ajoute un accès en base
         public async Task AddAsync(AccesExamen accesExamen)
         {
             await _context.AccesExamens.AddAsync(accesExamen);
             await _context.SaveChangesAsync();
         }
 
+        // Récupère un accès par Id
         public async Task<AccesExamen> GetByIdAsync(int id)
         {
             return await _context.AccesExamens
@@ -35,6 +37,7 @@ namespace ControleAcces.Infrastructure.Repositories
                 .FirstOrDefaultAsync(a => a.Id == id);
         }
 
+        // Récupère tous les accès pour un étudiant
         public async Task<IEnumerable<AccesExamen>> GetAllByEtudiantAsync(int etudiantId)
         {
             return await _context.AccesExamens
@@ -45,14 +48,20 @@ namespace ControleAcces.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public Task<bool> VerifierAccesAsync(int etudiantId)
+        // Vérifie si un étudiant a déjà un accès
+        public async Task<bool> VerifierAccesAsync(int etudiantId)
         {
-            throw new NotImplementedException();
+            return await _context.AccesExamens
+                .AnyAsync(a => a.EtudiantId == etudiantId);
         }
 
-        public Task<bool> HasAccessAsync(int id, string salleId, DateTime now)
+        // Vérifie si un étudiant a accès à une salle pour un horaire donné
+        public async Task<bool> HasAccessAsync(int etudiantId, int salleId, int horaireId)
         {
-            throw new NotImplementedException();
+            return await _context.AccesExamens
+                .AnyAsync(a => a.EtudiantId == etudiantId
+                            && a.SalleId == salleId
+                            && a.HoraireExamenId == horaireId);
         }
     }
 }

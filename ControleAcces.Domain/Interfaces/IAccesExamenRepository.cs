@@ -13,6 +13,6 @@ namespace ControleAcces.Domain.Interfaces
         Task<IEnumerable<AccesExamen>> GetAllByEtudiantAsync(int id);
         Task AddAsync(AccesExamen accesExamen);
         Task<bool> VerifierAccesAsync(int etudiantId);
-        Task<bool> HasAccessAsync(int etudiantId, string salleId, DateTime now);
+        Task<bool> HasAccessAsync(int etudiantId, int salleId, int horaireId);
     }
 }

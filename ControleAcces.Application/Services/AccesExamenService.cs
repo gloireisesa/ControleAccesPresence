@@ -1,4 +1,6 @@
-﻿using ControleAcces.Domain.Interfaces;
+﻿using ControleAcces.Application.DTOs;
+using ControleAcces.Domain.Entities;
+using ControleAcces.Domain.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,18 @@ namespace ControleAcces.Application.Services
         public async Task<bool> VerifierAccesAsync(int etudiantId)
         {
             return await _accesExamenRepository.VerifierAccesAsync(etudiantId);
+        }
+        public async Task EnregistrerAccesAsync(AccesExamenDto dto)
+        {
+            var acces = new AccesExamen
+            {
+                EtudiantId = dto.EtudiantId,
+                SalleId = dto.SalleId,
+                ModuleId = dto.ModuleId,
+                HoraireExamenId = dto.HoraireExamenId
+            };
+
+            await _accesExamenRepository.AddAsync(acces);
         }
     }
 }
