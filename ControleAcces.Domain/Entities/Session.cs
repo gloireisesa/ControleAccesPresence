@@ -14,6 +14,8 @@ namespace ControleAcces.Domain.Entities
         public DateTime DateFin { get; set; }
         public string AnneeAcademique { get; set; }
         public ICollection<HoraireExamen> HoraireExamens { get; set; } = new List<HoraireExamen>();
+        public ICollection<Salle> Salles { get; set; } = new List<Salle>();
+        public ICollection<Module> Modules { get; set; } = new List<Module>();
         public int TotalEtudiants { get; set; }
         //public string Session { get; set; }
     }

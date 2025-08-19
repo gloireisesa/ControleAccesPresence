@@ -63,5 +63,54 @@ namespace ControleAcces.Infrastructure.Repositories
                             && a.SalleId == salleId
                             && a.HoraireExamenId == horaireId);
         }
+        public async Task GenererAccesExamenPourSessionAsync(int sessionId)
+        {
+            // Récupérer tous les horaires de cette session
+            var horaires = await _context.HoraireExamens
+                .Where(h => h.SessionId == sessionId)
+                .ToListAsync();
+
+            if (!horaires.Any())
+                throw new InvalidOperationException($"Aucun horaire trouvé pour la session {sessionId}");
+
+            // Récupérer tous les modules de cette session
+            var modules = await _context.Modules
+                .Where(m => m.SessionId == sessionId)
+                .ToListAsync();
+
+            // Récupérer tous les étudiants de cette session
+            var etudiants = await _context.Etudiants
+                .Where(e => e.SessionId == sessionId)
+                .ToListAsync();
+
+            var accesList = new List<AccesExamen>();
+
+            foreach (var etudiant in etudiants)
+            {
+                foreach (var module in modules)
+                {
+                    // Trouver l'horaire correspondant au module et à la salle
+                    var horaire = horaires.FirstOrDefault(h => h.SalleId == module.SalleId);
+
+                    if (horaire != null)
+                    {
+                        accesList.Add(new AccesExamen
+                        {
+                            EtudiantId = etudiant.Id,
+                            ModuleId = module.Id,
+                            SalleId = module.SalleId.Value,
+                            HoraireExamenId = horaire.Id
+                        });
+                    }
+                }
+            }
+
+            if (accesList.Any())
+            {
+                await _context.AccesExamens.AddRangeAsync(accesList);
+                await _context.SaveChangesAsync();
+            }
+        }
+
     }
 }

@@ -23,6 +23,8 @@ namespace ControleAcces.Domain.Entities
         public int IdPromotion { get; set; }
         public Promotion Promotion { get; set; }
 
+        public int SessionId { get; set; }
+
         //public ICollection<Identifiant> IdentifiantsAcces { get; set; } = new List<Identifiant>();
         public ICollection<AccesExamen> AccesExamens { get; set; } = new List<AccesExamen>();
         public ICollection<Paiement> Paiements { get; set; } = new List<Paiement>();

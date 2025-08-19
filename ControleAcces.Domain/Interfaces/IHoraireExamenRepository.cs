@@ -13,5 +13,9 @@ namespace ControleAcces.Domain.Interfaces
         Task<IEnumerable<HoraireExamen>> GetAllAsync();
         Task AddAsync(HoraireExamen horaire);
         Task UpdateAsync(HoraireExamen horaireExamen);
+        Task<List<HoraireExamen>> GetByModuleIdAsync(int moduleId);
+        Task DeleteAsync(HoraireExamen horaire);
+        Task UpdateByModuleAndSessionAsync(int moduleId, int sessionId, int salleId);
+        //Task UpdateAsync(HoraireExamen horaire);
     }
 }

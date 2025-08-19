@@ -47,7 +47,17 @@ namespace ControleAcces.Infrastructure.Repositories
         }
         public async Task<List<Salle>> GetAllAsync()
         {
-            return await _context.Salles.ToListAsync();
+            {
+                return await _context.Salles
+                                     .Include(s => s.Session) // charge la session liée
+                                     .ToListAsync();
+            }
+        }
+        public async Task<List<Salle>> GetSallesParSessionAsync(int sessionId)
+        {
+            return await _context.Salles
+                                 .Where(s => s.SessionId == sessionId)
+                                 .ToListAsync();
         }
 
         public Task GetByIdAsync(Salle salleId)

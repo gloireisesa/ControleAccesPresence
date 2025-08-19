@@ -15,5 +15,6 @@ namespace ControleAcces.Application.DTOs
         public string Promotion { get; set; }
         public string CarteRFID { get; set; }
         public string Empreinte { get; set; }
+        public int SessionId { get; set; }
     }
 }

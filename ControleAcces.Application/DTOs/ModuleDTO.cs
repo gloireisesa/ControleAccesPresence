@@ -14,6 +14,8 @@ namespace ControleAcces.Application.DTOs
         public string? Nom { get; set; }
         public string? SalleAffectee { get; set; } = string.Empty;
 
+        public int SessionId { get; set; }
+
         public string Session { get; set; }
 
         public int SalleId { get; set; }

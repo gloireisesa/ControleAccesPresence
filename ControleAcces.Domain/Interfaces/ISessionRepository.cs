@@ -16,6 +16,7 @@ namespace ControleAcces.Domain.Interfaces
         Task UpdateAsync(Session session);
         Task DeleteAsync(int id);
         Task<Session?> GetByIdAsync(int? sessionId);
+        //Task<IEnumerable<object>> GetEtudiantsParSessionAsync(int sessionId);
         //Task<string> GetByIdAsync(int? sessionId);
 
         //Task<List<Session>> GetAllAsync();

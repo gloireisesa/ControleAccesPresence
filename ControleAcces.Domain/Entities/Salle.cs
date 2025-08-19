@@ -17,7 +17,11 @@ namespace ControleAcces.Domain.Entities
         public ICollection<AccesExamen> AccesExamens { get; set; } = new List<AccesExamen>();
         public ICollection<JournalPresence> Presences { get; set; } = new List<JournalPresence>();
         public ICollection<HoraireExamen> HoraireExamens { get; set; } = new List<HoraireExamen>();
+
+        public ICollection<Module> Modules { get; set; } = new List <Module>();
         public int? SessionId { get; set; }
+
+        public Session Session { get; set; }
         public string? SessionNom { get; set; }
         
     }

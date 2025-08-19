@@ -11,7 +11,15 @@
 
 <div class="mb-3 d-flex gap-3 align-items-center flex-wrap">
     <input placeholder="Nom du module" @bind="nomModule" class="form-control w-auto flex-grow-1" />
-    <input placeholder="Session" @bind="session" class="form-control w-auto" style="max-width: 180px;" />
+
+    <select @bind="sessionId" class="form-select w-auto" style="max-width: 200px;">
+        <option value="">-- Choisir Session --</option>
+        @foreach (var session in sessions)
+        {
+            <option value="@session.Id">@session.Nom</option>
+        }
+    </select>
+
     <select @bind="salleId" class="form-select w-auto" style="max-width: 200px;">
         <option value="">-- Choisir Salle --</option>
         @foreach (var salle in salles)
@@ -19,6 +27,7 @@
             <option value="@salle.Id">@salle.NomSalle</option>
         }
     </select>
+
     <button class="btn btn-primary" @onclick="SauvegarderModule">
         <i class="bi bi-check-circle-fill"></i> @(isEditing ? "Modifier" : "Ajouter")
     </button>
@@ -90,47 +99,14 @@
     </ul>
 </nav>
 
-<style>
-    .table-primary {
-        background-color: #cfe2ff !important;
-        color: #084298 !important;
-        font-weight: 600;
-    }
-
-    .page-link {
-        cursor: pointer;
-        color: #0d6efd;
-        border-radius: 0.375rem;
-        transition: background-color 0.3s, color 0.3s;
-    }
-
-        .page-link:hover:not(.disabled) {
-            background-color: #0d6efd;
-            color: white;
-        }
-
-    .page-item.active .page-link {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: white;
-        font-weight: 600;
-    }
-
-    .page-item.disabled .page-link {
-        cursor: not-allowed;
-        color: #6c757d;
-        background-color: transparent;
-        border-color: transparent;
-    }
-</style>
-
 @code {
     private List<ModuleDTO> modules = new();
     private List<ModuleDTO> modulesPage = new();
     private List<SalleDTO> salles = new();
+    private List<SessionDTO> sessions = new();
 
     private string nomModule;
-    private string session;
+    private int? sessionId;
     private int? salleId;
 
     private bool isEditing = false;
@@ -149,6 +125,7 @@
     {
         modules = await UseCase.GetAllModulesAsync();
         salles = await UseCase.GetAllSallesAsync();
+        sessions = await UseCase.GetAllSessionsAsync(); // 🔹 il faut ajouter cette méthode au UseCase
         UpdatePagedData();
     }
 
@@ -162,7 +139,7 @@
 
     private async Task SauvegarderModule()
     {
-        if (string.IsNullOrWhiteSpace(nomModule) || string.IsNullOrWhiteSpace(session))
+        if (string.IsNullOrWhiteSpace(nomModule) || sessionId == null)
         {
             await JS.InvokeVoidAsync("alert", "Le nom et la session sont obligatoires.");
             return;
@@ -171,11 +148,11 @@
         bool success;
         if (isEditing)
         {
-            success = await UseCase.ModifierModuleAsync(editingModuleId, nomModule, session, salleId);
+            success = await UseCase.ModifierModuleAsync(editingModuleId, nomModule, sessionId, salleId);
         }
         else
         {
-            success = await UseCase.AjouterModuleAsync(nomModule, session, salleId);
+            success = await UseCase.AjouterModuleAsync(nomModule, sessionId, salleId);
         }
 
         if (success)
@@ -212,7 +189,7 @@
         isEditing = true;
         editingModuleId = module.Id;
         nomModule = module.Nom;
-        session = module.Session;
+        sessionId = sessions.FirstOrDefault(s => s.Nom == module.Session)?.Id;
         salleId = salles.FirstOrDefault(s => s.NomSalle == module.SalleAffectee)?.Id;
     }
 
@@ -224,7 +201,7 @@
     private async Task ReinitialiserFormulaire()
     {
         nomModule = "";
-        session = "";
+        sessionId = null;
         salleId = null;
         isEditing = false;
         editingModuleId = 0;

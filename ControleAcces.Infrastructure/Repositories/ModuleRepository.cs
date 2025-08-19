@@ -27,28 +27,38 @@ namespace ControleAcces.Infrastructure.Repositories
 
         public async Task<Module> GetByIdAsync(int id)
         {
-            return await _context.Modules.FindAsync(id);
+            return await _context.Modules
+                .FirstOrDefaultAsync(m => m.Id == id);
         }
 
-        public async Task UpdateAsync(Module module)
-        {
-            _context.Modules.Update(module);
-            await _context.SaveChangesAsync();
-        }
-
-        async Task<List<Module>> IModuleRepository.GetAllAsync()
+        public async Task<List<Module>> GetAllAsync()
         {
             return await _context.Modules.ToListAsync();
         }
 
-        public Task DeleteAsync(Module module)
+        public async Task UpdateAsync(Module module)
         {
-            throw new NotImplementedException();
+            // Vérifie si l'entité est détachée
+            var tracked = await _context.Modules.FindAsync(module.Id);
+            if (tracked == null)
+            {
+                // L'entité n’existe pas → rien à faire
+                return;
+            }
+
+            // Met à jour les propriétés manuellement pour éviter les soucis d’attachement
+            _context.Entry(tracked).CurrentValues.SetValues(module);
+            await _context.SaveChangesAsync();
         }
 
-        //public Task<IEnumerable<Module>> GetAllAsync()
-        //{
-        //    return await _context.Modules.ToListAsync();
-        //}
+        public async Task DeleteAsync(Module module)
+        {
+            var tracked = await _context.Modules.FindAsync(module.Id);
+            if (tracked != null)
+            {
+                _context.Modules.Remove(tracked);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -18,5 +18,6 @@ namespace ControleAcces.Domain.Interfaces
         Task<Salle> GetByIdAsync(int id);
         Task AssignerASessionAsync(int salleId, int sessionId);
         Task DesassignerDeSessionAsync(int salleId);
+        Task<List<Salle>> GetSallesParSessionAsync(int sessionId);
     }
 }

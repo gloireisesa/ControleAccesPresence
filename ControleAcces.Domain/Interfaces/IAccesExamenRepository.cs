@@ -14,5 +14,6 @@ namespace ControleAcces.Domain.Interfaces
         Task AddAsync(AccesExamen accesExamen);
         Task<bool> VerifierAccesAsync(int etudiantId);
         Task<bool> HasAccessAsync(int etudiantId, int salleId, int horaireId);
+       
     }
 }

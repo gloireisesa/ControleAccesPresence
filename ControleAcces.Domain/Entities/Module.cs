@@ -10,9 +10,13 @@ namespace ControleAcces.Domain.Entities
     {
         public int Id { get; set; }
         public string? Nom { get; set; }
-        public string Session { get; set; }
+        public int? SessionId { get; set; }
+        public Session Session { get; set; }
         public string SalleAffectee { get; set; } = string.Empty;
         public int? SalleId { get; set; }
+         
+        public Salle Salle { get; set; }
+
         public string SalleNom { get; set; } = string.Empty;
         //public string Code { get; set; }
 
